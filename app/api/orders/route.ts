@@ -1,47 +1,46 @@
-import { auth } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
+
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import OrderModel, { OrderItem } from '@/lib/models/OrderModel';
 import ProductModel from '@/lib/models/ProductModel';
 import { round2 } from '@/lib/utils';
 
 const calcPrices = (orderItems: OrderItem[]) => {
-  // Calculate the items price
   const itemsPrice = round2(
     orderItems.reduce((acc, item) => acc + item.price * item.qty, 0),
   );
-  // Calculate the shipping price
   const shippingPrice = round2(itemsPrice > 100 ? 0 : 10);
-  // Calculate the tax price
   const taxPrice = round2(Number((0.15 * itemsPrice).toFixed(2)));
-  // Calculate the total price
   const totalPrice = round2(itemsPrice + shippingPrice + taxPrice);
   return { itemsPrice, shippingPrice, taxPrice, totalPrice };
 };
 
-export const POST = auth(async (req: any) => {
-  if (!req.auth) {
-    return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      },
-    );
+export const POST = async (req: any) => {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return Response.json({ message: 'unauthorized' }, { status: 401 });
   }
-  const { user } = req.auth;
+
+  const { user } = session;
+
   try {
     const payload = await req.json();
     await dbConnect();
+
     const dbProductPrices = await ProductModel.find(
       {
         _id: { $in: payload.items.map((x: { _id: string }) => x._id) },
       },
       'price',
     );
+
     const dbOrderItems = payload.items.map((x: { _id: string }) => ({
       ...x,
       product: x._id,
       price: dbProductPrices.find((item) => item._id.toString() === x._id)
-        .price,
+        ?.price,
       _id: undefined,
     }));
 
@@ -60,18 +59,12 @@ export const POST = auth(async (req: any) => {
     });
 
     const createdOrder = await newOrder.save();
+
     return Response.json(
       { message: 'Order has been created', order: createdOrder },
-      {
-        status: 201,
-      },
+      { status: 201 },
     );
   } catch (err: any) {
-    return Response.json(
-      { message: err.message },
-      {
-        status: 500,
-      },
-    );
+    return Response.json({ message: err.message }, { status: 500 });
   }
-});
+};
