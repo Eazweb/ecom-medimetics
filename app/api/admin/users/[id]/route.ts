@@ -1,9 +1,13 @@
+import { getServerSession } from 'next-auth';
+
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/lib/models/UserModel';
-import { getServerSession } from 'next-auth';
 
-export const GET = async (req: Request, { params }: { params: { id: string } }) => {
+export const GET = async (
+  req: Request,
+  { params }: { params: { id: string } },
+) => {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.isAdmin) {
@@ -22,7 +26,10 @@ export const GET = async (req: Request, { params }: { params: { id: string } }) 
   }
 };
 
-export const PUT = async (req: Request, { params }: { params: { id: string } }) => {
+export const PUT = async (
+  req: Request,
+  { params }: { params: { id: string } },
+) => {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.isAdmin) {
@@ -43,13 +50,19 @@ export const PUT = async (req: Request, { params }: { params: { id: string } }) 
     user.isAdmin = Boolean(isAdmin);
 
     const updatedUser = await user.save();
-    return Response.json({ message: 'User updated successfully', user: updatedUser });
+    return Response.json({
+      message: 'User updated successfully',
+      user: updatedUser,
+    });
   } catch (error: any) {
     return Response.json({ message: error.message }, { status: 500 });
   }
 };
 
-export const DELETE = async (req: Request, { params }: { params: { id: string } }) => {
+export const DELETE = async (
+  req: Request,
+  { params }: { params: { id: string } },
+) => {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.isAdmin) {
@@ -64,7 +77,10 @@ export const DELETE = async (req: Request, { params }: { params: { id: string } 
     }
 
     if (user.isAdmin) {
-      return Response.json({ message: 'Cannot delete an admin user' }, { status: 403 });
+      return Response.json(
+        { message: 'Cannot delete an admin user' },
+        { status: 403 },
+      );
     }
 
     await user.deleteOne();

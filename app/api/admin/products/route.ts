@@ -1,4 +1,5 @@
 import { getServerSession } from 'next-auth/next';
+
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import ProductModel from '@/lib/models/ProductModel';

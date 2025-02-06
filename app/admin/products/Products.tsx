@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
@@ -30,7 +30,7 @@ export default function ItemList({
 
   const { trigger: deleteItem } = useSWRMutation(
     `/api/admin/${itemType}`,
-    async (url:any, { arg }: { arg: { itemId: string } }) => {
+    async (url: any, { arg }: { arg: { itemId: string } }) => {
       const toastId = toast.loading(`Deleting ${itemType.slice(0, -1)}...`);
       const res = await fetch(`${url}/${arg.itemId}`, {
         method: 'DELETE',

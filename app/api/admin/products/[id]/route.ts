@@ -1,18 +1,15 @@
-;
+import { getServerSession } from 'next-auth';
+
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import ProductModel from '@/lib/models/ProductModel';
-import { getServerSession } from 'next-auth';
 
 export const GET = (async (...args: any) => {
   const [req, { params }] = args;
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.isAdmin) {
-    return Response.json(
-      { message: 'Unauthorized' },
-      { status: 401 }
-    );
+    return Response.json({ message: 'Unauthorized' }, { status: 401 });
   }
   await dbConnect();
   const product = await ProductModel.findById(params.id);
@@ -32,10 +29,7 @@ export const PUT = (async (...args: any) => {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.isAdmin) {
-    return Response.json(
-      { message: 'Unauthorized' },
-      { status: 401 }
-    );
+    return Response.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   const {
@@ -89,10 +83,7 @@ export const DELETE = (async (...args: any) => {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user?.isAdmin) {
-    return Response.json(
-      { message: 'Unauthorized' },
-      { status: 401 }
-    );
+    return Response.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   try {

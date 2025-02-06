@@ -1,8 +1,8 @@
+import { getServerSession } from 'next-auth';
 
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import OrderModel from '@/lib/models/OrderModel';
-import { getServerSession } from 'next-auth';
 
 export const PUT = (async (...args: any) => {
   const [req, { params }] = args;
