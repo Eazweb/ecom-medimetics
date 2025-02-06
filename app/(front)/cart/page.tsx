@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-
+import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
 export const metadata: Metadata = {
@@ -12,7 +12,9 @@ const CartDetails = dynamic(() => import('./CartDetails'), {
 const CartPage = () => {
   return (
     <div>
-      <CartDetails />
+      <Suspense fallback={<div>Loading cart details...</div>}>
+        <CartDetails />
+      </Suspense>
     </div>
   );
 };
