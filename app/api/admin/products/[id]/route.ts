@@ -1,15 +1,17 @@
-import { auth } from '@/lib/auth';
+;
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import ProductModel from '@/lib/models/ProductModel';
+import { getServerSession } from 'next-auth';
 
-export const GET = auth(async (...args: any) => {
+export const GET = (async (...args: any) => {
   const [req, { params }] = args;
-  if (!req.auth || !req.auth.user?.isAdmin) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.isAdmin) {
     return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      },
+      { message: 'Unauthorized' },
+      { status: 401 }
     );
   }
   await dbConnect();
@@ -25,14 +27,14 @@ export const GET = auth(async (...args: any) => {
   return Response.json(product);
 }) as any;
 
-export const PUT = auth(async (...args: any) => {
+export const PUT = (async (...args: any) => {
   const [req, { params }] = args;
-  if (!req.auth || !req.auth.user?.isAdmin) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.isAdmin) {
     return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      },
+      { message: 'Unauthorized' },
+      { status: 401 }
     );
   }
 
@@ -81,15 +83,15 @@ export const PUT = auth(async (...args: any) => {
   }
 }) as any;
 
-export const DELETE = auth(async (...args: any) => {
+export const DELETE = (async (...args: any) => {
   const [req, { params }] = args;
 
-  if (!req.auth || !req.auth.user?.isAdmin) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.isAdmin) {
     return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      },
+      { message: 'Unauthorized' },
+      { status: 401 }
     );
   }
 

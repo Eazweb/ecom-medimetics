@@ -5,7 +5,7 @@ import './globals.css';
 import DrawerButton from '@/components/DrawerButton';
 import Footer from '@/components/footer/Footer';
 import Header from '@/components/header/Header';
-import Providers from '@/components/Providers';
+import {Providers} from '@/components/Providers';
 import Sidebar from '@/components/Sidebar';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });

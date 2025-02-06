@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
@@ -8,8 +9,17 @@ import useSWRMutation from 'swr/mutation';
 import { User } from '@/lib/models/UserModel';
 import { formatId } from '@/lib/utils';
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('An error occurred while fetching the data.');
+  }
+  return res.json();
+};
+
 export default function Users() {
-  const { data: users, error } = useSWR(`/api/admin/users`);
+  const { data: users, error, isLoading } = useSWR<User[]>('/api/admin/users', fetcher);
+
   const { trigger: deleteUser } = useSWRMutation(
     `/api/admin/users`,
     async (url, { arg }: { arg: { userId: string } }) => {
@@ -30,8 +40,10 @@ export default function Users() {
           });
     },
   );
-  if (error) return 'An error has occurred.';
-  if (!users) return 'Loading...';
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>An error has occurred: {error.message}</div>;
+  if (!users) return <div>No users found</div>;
 
   return (
     <div>

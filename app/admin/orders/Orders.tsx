@@ -28,7 +28,7 @@ export default function Orders() {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order: Order) => (
+            {orders?.map((order: Order) => (
               <tr key={order._id}>
                 <td>..{order._id.substring(20, 24)}</td>
                 <td>{order.user?.name || 'Deleted user'}</td>

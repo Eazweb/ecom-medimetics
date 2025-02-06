@@ -1,10 +1,9 @@
-import NextAuth from 'next-auth';
-import type { NextAuthConfig } from 'next-auth';
+// middleware.ts
+import { withAuth } from 'next-auth/middleware';
 
-const authConfig = {
-  providers: [],
+export default withAuth({
   callbacks: {
-    authorized({ request, auth }: any) {
+    authorized({ req, token }) {
       const protectedPaths = [
         /\/shipping/,
         /\/payment/,
@@ -13,24 +12,17 @@ const authConfig = {
         /\/order\/(.*)/,
         /\/admin/,
       ];
-      const { pathname } = request.nextUrl;
-      if (protectedPaths.some((p) => p.test(pathname))) return !!auth;
+      const path = req.nextUrl.pathname;
+      if (protectedPaths.some((p) => p.test(path))) {
+        return !!token;
+      }
       return true;
     },
   },
-} satisfies NextAuthConfig;
-
-export const { auth: middleware } = NextAuth(authConfig);
+});
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

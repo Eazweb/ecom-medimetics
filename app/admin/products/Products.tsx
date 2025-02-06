@@ -1,99 +1,100 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
 import useSWRMutation from 'swr/mutation';
 
-import { Product } from '@/lib/models/ProductModel';
 import { formatId } from '@/lib/utils';
 
-export default function Products() {
-  const { data: products, error } = useSWR(`/api/admin/products`);
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('An error occurred while fetching the data.');
+  }
+  return res.json();
+};
 
-  const router = useRouter();
+export default function ItemList({
+  itemType,
+}: {
+  itemType: 'users' | 'products';
+}) {
+  const {
+    data: items,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR<any[]>(`/api/admin/${itemType}`, fetcher);
 
-  const { trigger: deleteProduct } = useSWRMutation(
-    `/api/admin/products`,
-    async (url, { arg }: { arg: { productId: string } }) => {
-      const toastId = toast.loading('Deleting product...');
-      const res = await fetch(`${url}/${arg.productId}`, {
+  const { trigger: deleteItem } = useSWRMutation(
+    `/api/admin/${itemType}`,
+    async (url:any, { arg }: { arg: { itemId: string } }) => {
+      const toastId = toast.loading(`Deleting ${itemType.slice(0, -1)}...`);
+      const res = await fetch(`${url}/${arg.itemId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
       });
       const data = await res.json();
-      res.ok
-        ? toast.success('Product deleted successfully', {
-            id: toastId,
-          })
-        : toast.error(data.message, {
-            id: toastId,
-          });
+      if (res.ok) {
+        toast.success(`${itemType.slice(0, -1)} deleted successfully`, {
+          id: toastId,
+        });
+        mutate(); // Refresh the data
+      } else {
+        toast.error(data.message, {
+          id: toastId,
+        });
+      }
     },
   );
 
-  const { trigger: createProduct, isMutating: isCreating } = useSWRMutation(
-    `/api/admin/products`,
-    async (url) => {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await res.json();
-      if (!res.ok) return toast.error(data.message);
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>An error has occurred: {error.message}</div>;
+  if (!items || items.length === 0) return <div>No {itemType} found</div>;
 
-      toast.success('Product created successfully');
-      router.push(`/admin/products/${data.product._id}`);
-    },
-  );
-
-  if (error) return 'An error has occurred.';
-  if (!products) return 'Loading...';
+  const columns =
+    itemType === 'users'
+      ? ['id', 'name', 'email', 'admin', 'actions']
+      : ['id', 'name', 'price', 'category', 'actions'];
 
   return (
     <div>
-      <div className='flex items-center justify-between'>
-        <h1 className='py-4 text-2xl'>Products</h1>
-        <button
-          disabled={isCreating}
-          onClick={() => createProduct()}
-          className='btn btn-primary btn-sm'
-        >
-          {isCreating && <span className='loading loading-spinner'></span>}
-          Create
-        </button>
-      </div>
+      <h1 className='py-4 text-2xl'>
+        {itemType.charAt(0).toUpperCase() + itemType.slice(1)}
+      </h1>
 
       <div className='overflow-x-auto'>
         <table className='table table-zebra'>
           <thead>
             <tr>
-              <th>id</th>
-              <th>name</th>
-              <th>price</th>
-              <th>category</th>
-              <th>count in stock</th>
-              <th>rating</th>
-              <th>actions</th>
+              {columns.map((column) => (
+                <th key={column}>{column}</th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {products.map((product: Product) => (
-              <tr key={product._id}>
-                <td>{formatId(product._id!)}</td>
-                <td>{product.name}</td>
-                <td>${product.price}</td>
-                <td>{product.category}</td>
-                <td>{product.countInStock}</td>
-                <td>{product.rating}</td>
+            {items.map((item: any) => (
+              <tr key={item._id}>
+                <td>{formatId(item._id)}</td>
+                <td>{item.name}</td>
+                {itemType === 'users' ? (
+                  <>
+                    <td>{item.email}</td>
+                    <td>{item.isAdmin ? 'YES' : 'NO'}</td>
+                  </>
+                ) : (
+                  <>
+                    <td>${item.price.toFixed(2)}</td>
+                    <td>{item.category}</td>
+                  </>
+                )}
                 <td>
                   <Link
-                    href={`/admin/products/${product._id}`}
+                    href={`/admin/${itemType}/${item._id}`}
                     type='button'
                     className='btn btn-ghost btn-sm'
                   >
@@ -101,7 +102,7 @@ export default function Products() {
                   </Link>
                   &nbsp;
                   <button
-                    onClick={() => deleteProduct({ productId: product._id! })}
+                    onClick={() => deleteItem({ itemId: item._id })}
                     type='button'
                     className='btn btn-ghost btn-sm'
                   >

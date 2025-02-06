@@ -1,14 +1,15 @@
-import { auth } from '@/lib/auth';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import OrderModel from '@/lib/models/OrderModel';
 
-export const GET = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user?.isAdmin) {
+export const GET = (async (req: any) => {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.isAdmin) {
     return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      },
+      { message: 'Unauthorized' },
+      { status: 401 }
     );
   }
   await dbConnect();

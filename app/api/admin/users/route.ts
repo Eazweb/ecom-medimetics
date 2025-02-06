@@ -1,17 +1,28 @@
-import { auth } from '@/lib/auth';
+// pages/api/admin/users.ts or app/api/admin/users/route.ts (depending on your Next.js version)
+
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/lib/models/UserModel';
 
-export const GET = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user?.isAdmin) {
+export async function GET(req: Request) {
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.isAdmin) {
     return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      },
+      { message: 'Unauthorized' },
+      { status: 401 }
     );
   }
-  await dbConnect();
-  const users = await UserModel.find();
-  return Response.json(users);
-}) as any;
+
+  try {
+    await dbConnect();
+    const users = await UserModel.find().lean();
+    return Response.json(users);
+  } catch (error: any) {
+    return Response.json(
+      { message: 'Error fetching users', error: error.message },
+      { status: 500 }
+    );
+  }
+}

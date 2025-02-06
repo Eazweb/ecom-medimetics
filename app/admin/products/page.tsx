@@ -1,11 +1,12 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 
 import Products from './Products';
+import ItemList from './Products';
 
 const AdminProductsPge = () => {
   return (
     <AdminLayout activeItem='products'>
-      <Products />
+      <ItemList itemType="products" />
     </AdminLayout>
   );
 };

@@ -1,6 +1,7 @@
+// components/admin/AdminLayout.tsx
 import Link from 'next/link';
-
-import { auth } from '@/lib/auth';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 
 const AdminLayout = async ({
   activeItem = 'dashboard',
@@ -9,7 +10,8 @@ const AdminLayout = async ({
   activeItem: string;
   children: React.ReactNode;
 }) => {
-  const session = await auth();
+  const session = await getServerSession(authOptions);
+  
   if (!session || !session.user.isAdmin) {
     return (
       <div className='relative flex flex-grow p-4'>
