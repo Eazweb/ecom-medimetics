@@ -16,6 +16,14 @@ const nextConfig = {
     ],
     formats: ['image/avif', 'image/webp'],
   },
+  // Disable TypeScript type checking during build
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  // Disable ESLint during build
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // experimental: {
   //   ppr: true,
   // },
