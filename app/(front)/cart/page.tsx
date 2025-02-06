@@ -1,15 +1,11 @@
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
-
+import CartDetails from './CartDetails';
+export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Shopping Cart',
 };
 
-const CartDetails = dynamic(() => import('./CartDetails'), {
-  loading: () => <div>Loading your orders...</div>,
-  ssr: false,
-});
 
 const CartPage = () => {
   return (
